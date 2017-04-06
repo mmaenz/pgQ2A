@@ -102,7 +102,7 @@
 
 			'mysql_version' => array(
 				'label' => qa_lang_html('admin/mysql_version'),
-				'value' => qa_html(qa_db_mysql_version()),
+				'value' => qa_html(qa_db_PDO_version()),
 			),
 
 			'break2' => array(

@@ -35,17 +35,10 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 		<title>Question2Answer Language Check</title>
 		<style>
-			body {
-				font-family: arial;
-				font-size: 12px;
-			}
-			code {font-size: 125%;}
-			.severe {color: #b83939;}
-			.warning {color: #d2930d;}
-			.includes {color: #999;}
+			code {font-size:125%;}
 		</style>
 	</head>
-	<body>
+	<body style="font-family:arial; font-size:12px;">
 <?php
 
 	function get_phrase_substitutions($phrase)
@@ -59,8 +52,8 @@
 		return $substitutions;
 	}
 
-	echo '<code class="severe">Red = important to review.</code><br>';
-	echo '<code class="warning">Orange = probably safe to ignore.</code>';
+	echo '<font color="#cc0000"><code>Dark red = important to review.</code></font><br>';
+	echo '<font color="#cc9999"><code>Light red = probably safe to ignore.</code></font>';
 
 	echo '<h1>Checking US English files in <code>qa-include</code>...</h1>';
 
@@ -214,14 +207,14 @@
 
 	function output_lang_issue($prefix, $key, $issue, $error=true)
 	{
-		$colorClass = $error ? 'severe' : 'warning';
+		echo '<font color="'.($error ? '#cc0000' : '#cc9999').'"><code>';
 
-		$htmlKey = strlen($key) > 0 ? "'<strong>" . qa_html($key) . "</strong>'" : '';
+		echo 'qa-lang-<b>'.qa_html($prefix).'</b>.php:';
 
-		echo sprintf(
-			'<code class="%s">qa-lang-<strong>%s</strong>.php:%s</code> &nbsp; %s<br>',
-			$colorClass, qa_html($prefix), $htmlKey, qa_html($issue)
-		);
+		if (strlen($key))
+			echo "'<b>".qa_html($key)."</b>'";
+
+		echo '</code></font> &nbsp; '.qa_html($issue).'<br>';
 	}
 
 
@@ -231,7 +224,7 @@
 
 		$oneread=false;
 
-		echo '<p class="includes">Reading: ';
+		echo '<p style="font-size:80%; color:#999;">Reading: ';
 	}
 
 

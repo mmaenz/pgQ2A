@@ -130,18 +130,15 @@
 		$mailer->From=$params['fromemail'];
 		$mailer->Sender=$params['fromemail'];
 		$mailer->FromName=$params['fromname'];
-		$mailer->addAddress($params['toemail'], $params['toname']);
-		if(!empty($params['replytoemail'])){
-			$mailer->addReplyTo($params['replytoemail'], $params['replytoname']);
-		}
+		$mailer->AddAddress($params['toemail'], $params['toname']);
 		$mailer->Subject=$params['subject'];
 		$mailer->Body=$params['body'];
 
 		if ($params['html'])
-			$mailer->isHTML(true);
+			$mailer->IsHTML(true);
 
 		if (qa_opt('smtp_active')) {
-			$mailer->isSMTP();
+			$mailer->IsSMTP();
 			$mailer->Host=qa_opt('smtp_address');
 			$mailer->Port=qa_opt('smtp_port');
 
@@ -165,7 +162,7 @@
 			}
 		}
 
-		$send_status = $mailer->send();
+		$send_status = $mailer->Send();
 		if(!$send_status){
 			@error_log('PHP Question2Answer email send error: '.$mailer->ErrorInfo);
 		}

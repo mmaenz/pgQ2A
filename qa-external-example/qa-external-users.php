@@ -46,7 +46,7 @@ if (!defined('QA_VERSION')) { // don't allow this page to be requested directly 
  * SMALLINT, SMALLINT UNSIGNED, MEDIUMINT, MEDIUMINT UNSIGNED, INT, INT UNSIGNED,
  * BIGINT, BIGINT UNSIGNED or VARCHAR(x) where x is the maximum length.
  */
-function qa_get_mysql_user_column_type()
+function qa_get_PDO_user_column_type()
 {
 	//	Set this before anything else
 
@@ -165,7 +165,7 @@ function qa_get_login_links($relative_url_prefix, $redirect_back_to_url)
  * You should check (using $_COOKIE, $_SESSION or whatever is appropriate) whether a user is
  * currently logged in. If not, return null. If so, return an array with the following elements:
  *
- * - userid: a user id appropriate for your response to qa_get_mysql_user_column_type()
+ * - userid: a user id appropriate for your response to qa_get_PDO_user_column_type()
  * - publicusername: a user description you are willing to show publicly, e.g. the username
  * - email: the logged in user's email address
  * - passsalt: (optional) password salt specific to this user, used for form security codes

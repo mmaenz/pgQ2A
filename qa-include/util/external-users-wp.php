@@ -26,7 +26,7 @@
 	}
 
 
-	function qa_get_mysql_user_column_type()
+	function qa_get_PDO_user_column_type()
 	{
 		return 'BIGINT UNSIGNED';
 	}

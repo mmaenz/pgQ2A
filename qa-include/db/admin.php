@@ -26,7 +26,7 @@
 	}
 
 
-	function qa_db_mysql_version()
+	function qa_db_PDO_version()
 /*
 	Return the current version of MySQL
 */
@@ -40,16 +40,16 @@
 	Return the total size in bytes of all relevant tables in the Q2A database
 */
 	{
-		if (defined('QA_MYSQL_USERS_PREFIX')) { // check if one of the prefixes is a prefix itself of the other
-			if (stripos(QA_MYSQL_USERS_PREFIX, QA_MYSQL_TABLE_PREFIX)===0)
-				$prefixes=array(QA_MYSQL_TABLE_PREFIX);
-			elseif (stripos(QA_MYSQL_TABLE_PREFIX, QA_MYSQL_USERS_PREFIX)===0)
-				$prefixes=array(QA_MYSQL_USERS_PREFIX);
+		if (defined('QA_PDO_USERS_PREFIX')) { // check if one of the prefixes is a prefix itself of the other
+			if (stripos(QA_PDO_USERS_PREFIX, QA_PDO_TABLE_PREFIX)===0)
+				$prefixes=array(QA_PDO_TABLE_PREFIX);
+			elseif (stripos(QA_PDO_TABLE_PREFIX, QA_PDO_USERS_PREFIX)===0)
+				$prefixes=array(QA_PDO_USERS_PREFIX);
 			else
-				$prefixes=array(QA_MYSQL_TABLE_PREFIX, QA_MYSQL_USERS_PREFIX);
+				$prefixes=array(QA_PDO_TABLE_PREFIX, QA_PDO_USERS_PREFIX);
 
 		} else
-			$prefixes=array(QA_MYSQL_TABLE_PREFIX);
+			$prefixes=array(QA_PDO_TABLE_PREFIX);
 
 		$size=0;
 		foreach ($prefixes as $prefix) {

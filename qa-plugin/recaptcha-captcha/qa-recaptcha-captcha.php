@@ -120,10 +120,7 @@ class qa_recaptcha_captcha
 			'}',
 		);
 
-		$lang = urlencode(qa_opt('site_language'));
-		if (empty($lang))
-			$lang = 'en';
-		$qa_content['script_src'][] = 'https://www.google.com/recaptcha/api.js?onload=recaptcha_onload&render=explicit&hl='.$lang;
+		$qa_content['script_src'][] = 'https://www.google.com/recaptcha/api.js?onload=recaptcha_onload&render=explicit';
 
 		return '';
 	}

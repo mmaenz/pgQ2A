@@ -56,10 +56,10 @@
 		if (isset($failhandler))
 			$qa_db_fail_handler = $failhandler; // set this even if connection already opened
 
-		if ($qa_db_connection instanceof mysqli)
+		if ($qa_db_connection instanceof PDO)
 			return;
 
-		$host = QA_FINAL_MYSQL_HOSTNAME;
+		$host = QA_FINAL_PDO_HOSTNAME;
 		$port = null;
 
 		if (defined('QA_FINAL_WORDPRESS_INTEGRATE_PATH')) {
@@ -69,29 +69,30 @@
 				$host = $host_and_port[0];
 				$port = $host_and_port[1];
 			}
-		} elseif (defined('QA_FINAL_MYSQL_PORT')) {
-			$port = QA_FINAL_MYSQL_PORT;
+		} elseif (defined('QA_FINAL_PDO_PORT')) {
+			$port = QA_FINAL_PDO_PORT;
 		}
 
-		if (QA_PERSISTENT_CONN_DB)
-			$host = 'p:'.$host;
+		//if (QA_PERSISTENT_CONN_DB)
+		//	$host = 'p:'.$host;
 
+		$db_str = QA_FINAL_PDO_DBTYPE.':dbname='.QA_FINAL_PDO_DATABASE.';host='.QA_FINAL_PDO_HOSTNAME.';port='.QA_FINAL_PDO_PORT;
+		@error_log('PHP Question2Answer "'.$db_str.'" user: '.QA_FINAL_PDO_USERNAME.' and password: '.QA_FINAL_PDO_PASSWORD);	
 		// in mysqli we connect and select database in constructor
-		if ($port !== null)
-			$db = new mysqli($host, QA_FINAL_MYSQL_USERNAME, QA_FINAL_MYSQL_PASSWORD, QA_FINAL_MYSQL_DATABASE, $port);
-		else
-			$db = new mysqli($host, QA_FINAL_MYSQL_USERNAME, QA_FINAL_MYSQL_PASSWORD, QA_FINAL_MYSQL_DATABASE);
+		
+		try {
+		
+			$db = new PDO($db_str, QA_FINAL_PDO_USERNAME, QA_FINAL_PDO_PASSWORD);
+			//$db->exec("set names utf8");
 
+		} catch (PDOException $e) {
+			qa_db_fail_error('connect', $e->getCode(), $e->getMessage());
+		}
 		// must use procedural `mysqli_connect_error` here prior to 5.2.9
-		$conn_error = mysqli_connect_error();
-		if ($conn_error)
-			qa_db_fail_error('connect', $db->connect_errno, $conn_error);
 
 		// From Q2A 1.5, we explicitly set the character encoding of the MySQL connection, instead of using lots of "SELECT BINARY col"-style queries.
 		// Testing showed that overhead is minimal, so this seems worth trading off against the benefit of more straightforward queries, especially
 		// for plugin developers.
-		if (!$db->set_charset('utf8'))
-			qa_db_fail_error('set_charset', $db->errno, $db->error);
 
 		qa_report_process_stage('db_connected');
 
@@ -108,15 +109,13 @@
 
 		global $qa_db_fail_handler;
 
-		@error_log('PHP Question2Answer MySQL ' . $type . ' error ' . $errno . ': ' . $error . (isset($query) ? (' - Query: ' . $query) : ''));
+		@error_log('PHP Question2Answer PDO '.$type.' error '.$errno.': '.$error.(isset($query) ? (' - Query: '.$query) : ''));
 
 		if (function_exists($qa_db_fail_handler))
 			$qa_db_fail_handler($type, $errno, $error, $query);
+
 		else {
-			echo sprintf(
-				'<hr><div style="color: red">Database %s<p>%s</p><code>%s</code></div>',
-				htmlspecialchars($type . ' error ' . $errno), nl2br(htmlspecialchars($error)), nl2br(htmlspecialchars($query))
-			);
+			echo '<hr><font color="red">Database '.htmlspecialchars($type.' error '.$errno).'<p>'.nl2br(htmlspecialchars($error."\n\n".$query));
 			qa_exit('error');
 		}
 	}
@@ -131,10 +130,10 @@
 
 		global $qa_db_connection;
 
-		if ($connect && !($qa_db_connection instanceof mysqli)) {
+		if ($connect && !($qa_db_connection instanceof PDO)) {
 			qa_db_connect();
 
-			if (!($qa_db_connection instanceof mysqli))
+			if (!($qa_db_connection instanceof PDO))
 				qa_fatal_error('Failed to connect to database');
 		}
 
@@ -151,13 +150,8 @@
 
 		global $qa_db_connection;
 
-		if ($qa_db_connection instanceof mysqli) {
+		if ($qa_db_connection instanceof PDO) {
 			qa_report_process_stage('db_disconnect');
-
-			if (!QA_PERSISTENT_CONN_DB) {
-				if (!$qa_db_connection->close())
-					qa_fatal_error('Database disconnect failed');
-			}
 
 			$qa_db_connection=null;
 		}
@@ -182,21 +176,21 @@
 
 			// fetch counts
 			$gotrows = $gotcolumns = null;
-			if ($result instanceof mysqli_result) {
+			//if ($result instanceof mysqli_result) {
 				$gotrows = $result->num_rows;
 				$gotcolumns = $result->field_count;
-			}
+			//}
 
 			$qa_usage->logDatabaseQuery($query, $usedtime, $gotrows, $gotcolumns);
 		}
 		else
 			$result = qa_db_query_execute($query);
 
-	//	@error_log('Question2Answer MySQL query: '.$query);
+		@error_log('Question2Answer MySQL query: '.$query);
 
 		if ($result === false) {
 			$db = qa_db_connection();
-			qa_db_fail_error('query', $db->errno, $db->error, $query);
+			qa_db_fail_error('query', $db->errorCode, $db->errorInfo(), $query);
 		}
 
 		return $result;
@@ -215,7 +209,7 @@
 		for ($attempt = 0; $attempt < 100; $attempt++) {
 			$result = $db->query($query);
 
-			if ($result === false && $db->errno == 1213)
+			if ($result === false && $db->errorCode() == 1213)
 				usleep(10000); // deal with InnoDB deadlock errors by waiting 0.01s then retrying
 			else
 				break;
@@ -233,7 +227,7 @@
 		if (qa_to_override(__FUNCTION__)) { $args=func_get_args(); return qa_call_override(__FUNCTION__, $args); }
 
 		$db = qa_db_connection();
-		return $db->real_escape_string($string);
+		return $db->quote($string);
 	}
 
 
@@ -275,9 +269,9 @@
 	{
 		if (qa_to_override(__FUNCTION__)) { $args=func_get_args(); return qa_call_override(__FUNCTION__, $args); }
 
-		$prefix = QA_MYSQL_TABLE_PREFIX;
+		$prefix = QA_PDO_TABLE_PREFIX;
 
-		if (defined('QA_MYSQL_USERS_PREFIX')) {
+		if (defined('QA_PDO_USERS_PREFIX')) {
 			switch (strtolower($rawname)) {
 				case 'users':
 				case 'userlogins':
@@ -289,7 +283,7 @@
 				case 'cache':
 				case 'userlogins_ibfk_1': // also special cases for constraint names
 				case 'userprofile_ibfk_1':
-					$prefix = QA_MYSQL_USERS_PREFIX;
+					$prefix = QA_PDO_USERS_PREFIX;
 					break;
 			}
 		}
@@ -365,10 +359,10 @@
 	 */
 	function qa_db_num_rows($result)
 	{
-		if ($result instanceof mysqli_result)
+		//if ($result instanceof mysqli_result)
 			return $result->num_rows;
 
-		return 0;
+		//return 0;
 	}
 
 
@@ -426,7 +420,7 @@
 	 */
 	function qa_db_list_tables()
 	{
-		return qa_db_read_all_values(qa_db_query_raw('SHOW TABLES'));
+		return qa_db_read_all_values(qa_db_query_raw("SELECT * FROM information_schema.tables WHERE table_schema = 'public';"));
 	}
 
 
@@ -658,8 +652,8 @@
 	 */
 	function qa_db_read_all_assoc($result, $key=null, $value=null)
 	{
-		if (!($result instanceof mysqli_result))
-			qa_fatal_error('Reading all assoc from invalid result');
+		//if (!($result instanceof mysqli_result))
+		//	qa_fatal_error('Reading all assoc from invalid result');
 
 		$assocs = array();
 
@@ -680,8 +674,8 @@
 	 */
 	function qa_db_read_one_assoc($result, $allowempty=false)
 	{
-		if (!($result instanceof mysqli_result))
-			qa_fatal_error('Reading one assoc from invalid result');
+		//if (!($result instanceof mysqli_result))
+		//	qa_fatal_error('Reading one assoc from invalid result');
 
 		$assoc = $result->fetch_assoc();
 
@@ -700,12 +694,12 @@
 	 */
 	function qa_db_read_all_values($result)
 	{
-		if (!($result instanceof mysqli_result))
-			qa_fatal_error('Reading column from invalid result');
+		//if (!($result instanceof mysqli_result))
+		//	qa_fatal_error('Reading column from invalid result');
 
 		$output = array();
 
-		while ($row = $result->fetch_row())
+		while ($row = $result->fetch())
 			$output[] = $row[0];
 
 		return $output;
@@ -718,8 +712,8 @@
 	 */
 	function qa_db_read_one_value($result, $allowempty=false)
 	{
-		if (!($result instanceof mysqli_result))
-			qa_fatal_error('Reading one value from invalid result');
+		//if (!($result instanceof mysqli_result))
+		//	qa_fatal_error('Reading one value from invalid result');
 
 		$row = $result->fetch_row();
 

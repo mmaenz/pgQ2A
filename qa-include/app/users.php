@@ -154,9 +154,9 @@
 		{
 			if (qa_to_override(__FUNCTION__)) { $args=func_get_args(); return qa_call_override(__FUNCTION__, $args); }
 
-			$prefix=defined('QA_MYSQL_USERS_PREFIX') ? QA_MYSQL_USERS_PREFIX : QA_MYSQL_TABLE_PREFIX;
+			$prefix=defined('QA_PDO_USERS_PREFIX') ? QA_PDO_USERS_PREFIX : QA_PDO_TABLE_PREFIX;
 
-			return md5(QA_FINAL_MYSQL_HOSTNAME.'/'.QA_FINAL_MYSQL_USERNAME.'/'.QA_FINAL_MYSQL_PASSWORD.'/'.QA_FINAL_MYSQL_DATABASE.'/'.$prefix);
+			return md5(QA_FINAL_PDO_HOSTNAME.'/'.QA_FINAL_PDO_USERNAME.'/'.QA_FINAL_PDO_PASSWORD.'/'.QA_FINAL_PDO_DATABASE.'/'.$prefix);
 		}
 
 
@@ -167,7 +167,7 @@
 		{
 			if (qa_to_override(__FUNCTION__)) { $args=func_get_args(); return qa_call_override(__FUNCTION__, $args); }
 
-			return sha1($userid.'/'.QA_MYSQL_TABLE_PREFIX.'/'.QA_FINAL_MYSQL_DATABASE.'/'.QA_FINAL_MYSQL_PASSWORD.'/'.QA_FINAL_MYSQL_USERNAME.'/'.QA_FINAL_MYSQL_HOSTNAME);
+			return sha1($userid.'/'.QA_PDO_TABLE_PREFIX.'/'.QA_FINAL_PDO_DATABASE.'/'.QA_FINAL_PDO_PASSWORD.'/'.QA_FINAL_PDO_USERNAME.'/'.QA_FINAL_PDO_HOSTNAME);
 		}
 
 
@@ -439,7 +439,7 @@
 		}
 
 
-		function qa_get_mysql_user_column_type()
+		function qa_get_PDO_user_column_type()
 	/*
 		Return column type to use for users (if not using single sign-on integration)
 	*/

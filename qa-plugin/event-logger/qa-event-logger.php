@@ -34,7 +34,7 @@ class qa_event_logger
 				return 'CREATE TABLE ^eventlog ('.
 					'datetime DATETIME NOT NULL,'.
 					'ipaddress VARCHAR (15) CHARACTER SET ascii,'.
-					'userid '.qa_get_mysql_user_column_type().','.
+					'userid '.qa_get_PDO_user_column_type().','.
 					'handle VARCHAR('.QA_DB_MAX_HANDLE_LENGTH.'),'.
 					'cookieid BIGINT UNSIGNED,'.
 					'event VARCHAR (20) CHARACTER SET ascii NOT NULL,'.
@@ -46,8 +46,6 @@ class qa_event_logger
 				') ENGINE=MyISAM DEFAULT CHARSET=utf8';
 			}
 		}
-
-		return array();
 	}
 
 
@@ -95,7 +93,7 @@ class qa_event_logger
 
 			'fields' => array(
 				array(
-					'label' => 'Log events to <code>'.QA_MYSQL_TABLE_PREFIX.'eventlog</code> database table',
+					'label' => 'Log events to <code>'.QA_PDO_TABLE_PREFIX.'eventlog</code> database table',
 					'tags' => 'name="event_logger_to_database_field"',
 					'value' => qa_opt('event_logger_to_database'),
 					'type' => 'checkbox',

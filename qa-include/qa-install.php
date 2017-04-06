@@ -210,7 +210,7 @@ if (qa_db_connection(false) !== null && !@$pass_failure_from_install) {
 					$errorhtml .= "\n\nWhen you click below, your Question2Answer site will be set up to integrate with the users of your WordPress site <a href=\"".qa_html(get_option('home'))."\" target=\"_blank\">".qa_html(get_option('blogname'))."</a>. Please consult the online documentation for more information.";
 				}
 				else {
-					$errorhtml .= "\n\nWhen you click below, your Question2Answer site will be set up to integrate with your existing user database and management. Users will be referenced with database column type ".qa_html(qa_get_mysql_user_column_type()).". Please consult the online documentation for more information.";
+					$errorhtml .= "\n\nWhen you click below, your Question2Answer site will be set up to integrate with your existing user database and management. Users will be referenced with database column type ".qa_html(qa_get_PDO_user_column_type()).". Please consult the online documentation for more information.";
 				}
 
 				$buttons = array('create' => 'Set up the Database');

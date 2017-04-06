@@ -227,11 +227,12 @@
 	//	More for WordPress integration
 
 		if (defined('QA_FINAL_WORDPRESS_INTEGRATE_PATH')) {
-			define('QA_FINAL_MYSQL_HOSTNAME', DB_HOST);
-			define('QA_FINAL_MYSQL_USERNAME', DB_USER);
-			define('QA_FINAL_MYSQL_PASSWORD', DB_PASSWORD);
-			define('QA_FINAL_MYSQL_DATABASE', DB_NAME);
+			define('QA_FINAL_PDO_HOSTNAME', DB_HOST);
+			define('QA_FINAL_PDO_USERNAME', DB_USER);
+			define('QA_FINAL_PDO_PASSWORD', DB_PASSWORD);
+			define('QA_FINAL_PDO_DATABASE', DB_NAME);
 			define('QA_FINAL_EXTERNAL_USERS', true);
+			define('QA_FINAL_PDO_DBTYPE', QA_PDO_DBTYPE);
 
 			// Undo WordPress's addition of magic quotes to various things (leave $_COOKIE as is since WP code might need that)
 
@@ -255,15 +256,16 @@
 			$_SERVER['PHP_SELF']=stripslashes($_SERVER['PHP_SELF']);
 
 		} else {
-			define('QA_FINAL_MYSQL_HOSTNAME', QA_MYSQL_HOSTNAME);
-			define('QA_FINAL_MYSQL_USERNAME', QA_MYSQL_USERNAME);
-			define('QA_FINAL_MYSQL_PASSWORD', QA_MYSQL_PASSWORD);
-			define('QA_FINAL_MYSQL_DATABASE', QA_MYSQL_DATABASE);
+			define('QA_FINAL_PDO_HOSTNAME', QA_PDO_HOSTNAME);
+			define('QA_FINAL_PDO_USERNAME', QA_PDO_USERNAME);
+			define('QA_FINAL_PDO_PASSWORD', QA_PDO_PASSWORD);
+			define('QA_FINAL_PDO_DATABASE', QA_PDO_DATABASE);
 			define('QA_FINAL_EXTERNAL_USERS', QA_EXTERNAL_USERS);
+			define('QA_FINAL_PDO_DBTYPE', QA_PDO_DBTYPE);
 		}
 
-		if (defined('QA_MYSQL_PORT')) {
-			define('QA_FINAL_MYSQL_PORT', QA_MYSQL_PORT);
+		if (defined('QA_PDO_PORT')) {
+			define('QA_FINAL_PDO_PORT', QA_PDO_PORT);
 		}
 
 	//	Possible URL schemes for Q2A and the string used for url scheme testing
@@ -689,18 +691,14 @@
 	{
 		if (qa_to_override(__FUNCTION__)) { $args=func_get_args(); return qa_call_override(__FUNCTION__, $args); }
 
-		echo 'Question2Answer fatal error:<p style="color: red">' . qa_html($message, true) . '</p>';
-		@error_log('PHP Question2Answer fatal error: ' . $message);
+		echo 'Question2Answer fatal error:<p><font color="red">'.qa_html($message, true).'</font></p>';
+		@error_log('PHP Question2Answer fatal error: '.$message);
 		echo '<p>Stack trace:<p>';
 
-		$backtrace = array_reverse(array_slice(debug_backtrace(), 1));
-		foreach ($backtrace as $trace) {
-			$color = strpos(@$trace['file'], '/qa-plugin/') !== false ? 'red' : '#999';
-			echo sprintf(
-				'<code style="color: %s">%s() in %s:%s</code><br>',
-				$color, qa_html(@$trace['function']), basename(@$trace['file']), @$trace['line']
-			);
-		}
+		$backtrace=array_reverse(array_slice(debug_backtrace(), 1));
+		foreach ($backtrace as $trace)
+			echo '<font color="#'.((strpos(@$trace['file'], '/qa-plugin/')!==false) ? 'f00' : '999').'">'.
+				qa_html(@$trace['function'].'() in '.basename(@$trace['file']).':'.@$trace['line']).'</font><br>';
 
 		qa_exit('error');
 	}

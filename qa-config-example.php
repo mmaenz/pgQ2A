@@ -25,19 +25,19 @@
 	  THE 4 DEFINITIONS BELOW ARE REQUIRED AND MUST BE SET BEFORE USING!
 	======================================================================
 
-	For QA_MYSQL_HOSTNAME, try '127.0.0.1' or 'localhost' if MySQL is on the same server.
+	For QA_PDO_HOSTNAME, try '127.0.0.1' or 'localhost' if MySQL is on the same server.
 
 	For persistent connections, set the QA_PERSISTENT_CONN_DB at the bottom of this file; do NOT
 	prepend the hostname with 'p:'.
 
 	To use a non-default port, add the following line to the list of defines, with the appropriate port number:
-	define('QA_MYSQL_PORT', '3306');
+	define('QA_PDO_PORT', '3306');
 */
 
-	define('QA_MYSQL_HOSTNAME', '127.0.0.1');
-	define('QA_MYSQL_USERNAME', 'your-mysql-username');
-	define('QA_MYSQL_PASSWORD', 'your-mysql-password');
-	define('QA_MYSQL_DATABASE', 'your-mysql-db-name');
+	define('QA_PDO_HOSTNAME', '127.0.0.1');
+	define('QA_PDO_USERNAME', 'your-mysql-username');
+	define('QA_PDO_PASSWORD', 'your-mysql-password');
+	define('QA_PDO_DATABASE', 'your-mysql-db-name');
 
 /*
 	Ultra-concise installation instructions:
@@ -57,26 +57,26 @@
 	 OPTIONAL CONSTANT DEFINITIONS, INCLUDING SUPPORT FOR SINGLE SIGN-ON
 	======================================================================
 
-	QA_MYSQL_TABLE_PREFIX will be added to table names, to allow multiple datasets in a single
+	QA_PDO_TABLE_PREFIX will be added to table names, to allow multiple datasets in a single
 	MySQL database, or to include the Question2Answer tables in an existing MySQL database.
 */
 
-	define('QA_MYSQL_TABLE_PREFIX', 'qa_');
+	define('QA_PDO_TABLE_PREFIX', 'qa_');
 
 /*
-	If you wish, you can define QA_MYSQL_USERS_PREFIX separately from QA_MYSQL_TABLE_PREFIX.
-	If so, it is used instead of QA_MYSQL_TABLE_PREFIX as the prefix for tables containing
+	If you wish, you can define QA_PDO_USERS_PREFIX separately from QA_PDO_TABLE_PREFIX.
+	If so, it is used instead of QA_PDO_TABLE_PREFIX as the prefix for tables containing
 	information about user accounts (not including users' activity and points). This allows
 	multiple Q2A sites to have shared logins and users, but separate posts and activity.
 
-	define('QA_MYSQL_USERS_PREFIX', 'qa_users_');
+	define('QA_PDO_USERS_PREFIX', 'qa_users_');
 */
 
 /*
 	If you wish, you can define QA_BLOBS_DIRECTORY to store BLOBs (binary large objects) such
 	as avatars and uploaded files on disk, rather than in the database. If so this directory
 	must be writable by the web server process - on Unix/Linux use chown/chmod as appropriate.
-	Note than if multiple Q2A sites are using QA_MYSQL_USERS_PREFIX to share users, they must
+	Note than if multiple Q2A sites are using QA_PDO_USERS_PREFIX to share users, they must
 	also have the same value for QA_BLOBS_DIRECTORY.
 
 	If there are already some BLOBs stored in the database from previous uploads, click the
@@ -121,7 +121,7 @@
 /*
 	Out-of-the-box WordPress 3.x integration - to integrate with your WordPress site and user
 	database, define QA_WORDPRESS_INTEGRATE_PATH as the full path to the WordPress directory
-	containing wp-load.php. You do not need to set the QA_MYSQL_* constants above since these
+	containing wp-load.php. You do not need to set the QA_PDO_* constants above since these
 	will be taken from WordPress automatically. See online documentation for more details.
 
 	define('QA_WORDPRESS_INTEGRATE_PATH', '/PATH/TO/WORDPRESS');

@@ -31,6 +31,7 @@ class qa_xml_sitemap
 			case 'xml_sitemap_show_category_qs':
 			case 'xml_sitemap_show_categories':
 				return true;
+				break;
 		}
 	}
 

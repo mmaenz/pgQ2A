@@ -89,10 +89,8 @@
 				);
 
 				if (qa_send_email(array(
-					'fromemail' => qa_opt('from_email'),
+					'fromemail' => qa_email_validate(@$inemail) ? $inemail : qa_opt('from_email'),
 					'fromname' => $inname,
-					'replytoemail' => qa_email_validate(@$inemail) ? $inemail : null,
-					'replytoname' => $inname,
 					'toemail' => qa_opt('feedback_email'),
 					'toname' => qa_opt('site_title'),
 					'subject' => qa_lang_sub('emails/feedback_subject', qa_opt('site_title')),
