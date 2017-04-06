@@ -166,7 +166,195 @@ $install_tables = array(
 			"position" INT NOT NULL UNIQUE, 
 			tags VARCHAR(800) NOT NULL, 
 			title VARCHAR(80) NOT NULL, 
-			PRIMARY KEY (widgetid));'));
+			PRIMARY KEY (widgetid));'),
+    'posts' => array('DROP TYPE IF EXISTS ptype;',
+			'CREATE TYPE ptype AS ENUM(' . qa_db_escape_string('Q') . ', ' . qa_db_escape_string('A') . ', ' . qa_db_escape_string('C') . ', ' . qa_db_escape_string('Q_HIDDEN') . ', ' . qa_db_escape_string('A_HIDDEN') . ', ' . qa_db_escape_string('C_HIDDEN') . ', ' . qa_db_escape_string('Q_QUEUED') . ', ' . qa_db_escape_string('A_QUEUED') . ', ' . qa_db_escape_string('C_QUEUED') . ', ' . qa_db_escape_string('NOTE') . ');',
+			'CREATE TABLE posts (
+			    postid SERIAL NOT NULL, 
+			    "type" ptype NOT NULL, 
+			    parentid INT, 
+			    categoryid INT,
+			    catidpath1 INT, 
+			    catidpath2 INT, 
+			    catidpath3 INT, 
+			    acount INT NOT NULL DEFAULT 0, 
+			    amaxvote INT NOT NULL DEFAULT 0, 
+			    selchildid INT, 
+			    closedbyid INT, 
+			    userid INT, 
+			    cookieid BIGINT, 
+			    createip INT, 
+			    lastuserid INT, 
+			    lastip INT, 
+			    upvotes INT NOT NULL DEFAULT 0, 
+			    downvotes INT NOT NULL DEFAULT 0, 
+			    netvotes INT NOT NULL DEFAULT 0, 
+			    lastviewip INT, 
+			    "views" INT NOT NULL DEFAULT 0, 
+			    hotness FLOAT, 
+			    flagcount INT NOT NULL DEFAULT 0, 
+			    format VARCHAR(20) NOT NULL DEFAULT ' . qa_db_escape_string('') . ', 
+			    created TIMESTAMP(0) NOT NULL, 
+			    updated TIMESTAMP(0), 
+			    updatetype CHAR(1), 
+			    title VARCHAR(800), 
+			    "content" VARCHAR(8000), 
+			    tags VARCHAR(800), 
+			    "name" VARCHAR(40), 
+			    "notify" VARCHAR(80), 
+			    PRIMARY KEY (postid),
+			    CONSTRAINT posts_ibfk_2 FOREIGN KEY (parentid) REFERENCES posts(postid),
+			    CONSTRAINT posts_ibfk_3 FOREIGN KEY (categoryid) REFERENCES categories(categoryid) ON DELETE SET NULL,
+			    CONSTRAINT posts_ibfk_4 FOREIGN KEY (closedbyid) REFERENCES posts(postid), 
+			    CONSTRAINT posts_ibfk_1 FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE SET NULL);',
+
+			'CREATE INDEX ON posts ("type", created);',
+			'CREATE INDEX ON posts ("type", acount, created);',
+			'CREATE INDEX ON posts ("type", netvotes, created);',
+			'CREATE INDEX ON posts ("type", "views", created);',
+			'CREATE INDEX ON posts ("type", hotness);',
+			'CREATE INDEX ON posts ("type", amaxvote, created);',
+			'CREATE INDEX ON posts (parentid, "type");',
+			'CREATE INDEX ON posts (userid, "type", created);',
+			'CREATE INDEX ON posts (selchildid, "type", created);',
+			'CREATE INDEX ON posts (closedbyid);',
+			'CREATE INDEX ON posts (catidpath1, "type", created);',
+			'CREATE INDEX ON posts (catidpath2, "type", created);',
+			'CREATE INDEX ON posts (catidpath3, "type", created);',
+			'CREATE INDEX ON posts (categoryid, "type", created);',
+			'CREATE INDEX ON posts (createip, created);',
+			'CREATE INDEX ON posts (updated, "type");',
+			'CREATE INDEX ON posts (flagcount, created, "type");',
+			'CREATE INDEX ON posts (catidpath1, updated, "type");',
+			'CREATE INDEX ON posts (catidpath2, updated, "type");',
+			'CREATE INDEX ON posts (catidpath3, updated, "type");',
+			'CREATE INDEX ON posts (categoryid, updated, "type");',
+			'CREATE INDEX ON posts (lastuserid, updated, "type");',
+			'CREATE INDEX ON posts (lastip, updated, "type");'),
+    'blobs' => array('CREATE TABLE blobs (
+			blobid BIGINT NOT NULL, 
+			format VARCHAR(20) NOT NULL, 
+			"content" BYTEA, 
+			filename VARCHAR(255), 
+			userid INT, 
+			cookieid BIGINT,
+			createip INT,
+			created TIMESTAMP(0),
+			PRIMARY KEY (blobid));'),
+    'words' => array('CREATE TABLE words (
+			wordid SERIAL NOT NULL, 
+			word VARCHAR(80) NOT NULL, 
+			titlecount INT NOT NULL DEFAULT 0, 
+			contentcount INT NOT NULL DEFAULT 0, 
+			tagwordcount INT NOT NULL DEFAULT 0, 
+			tagcount INT NOT NULL DEFAULT 0, 
+			PRIMARY KEY (wordid));',
+
+			'CREATE INDEX ON words (word);',
+			'CREATE INDEX ON words (tagcount);'),
+    'titlewords' => array('CREATE TABLE titlewords (
+			    postid INT NOT NULL, 
+			    wordid INT NOT NULL, 
+			    CONSTRAINT titlewords_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+			    CONSTRAINT titlewords_ibfk_2 FOREIGN KEY (wordid) REFERENCES words(wordid));',
+			    'CREATE INDEX ON titlewords (postid);',
+			    'CREATE INDEX ON titlewords (wordid);'),
+    'contentwords' => array('DROP TYPE IF EXISTS ctype;',
+				'CREATE TYPE ctype AS ENUM(' . qa_db_escape_string('Q') . ', ' . qa_db_escape_string('A') . ', ' . qa_db_escape_string('C') . ', ' . qa_db_escape_string('NOTE') . ');',
+
+				'CREATE TABLE contentwords (
+				postid INT NOT NULL, 
+				wordid INT NOT NULL, 
+				count INT NOT NULL, 
+				"type" ctype NOT NULL, 
+				questionid INT NOT NULL, 
+				CONSTRAINT contentwords_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+				CONSTRAINT contentwords_ibfk_2 FOREIGN KEY (wordid) REFERENCES words(wordid));',
+
+				'CREATE INDEX ON contentwords (postid);',
+				'CREATE INDEX ON contentwords (wordid);'),
+    'tagwords' => array('CREATE TABLE tagwords (
+			    postid INT NOT NULL, 
+			    wordid INT NOT NULL, 
+			    CONSTRAINT tagwords_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+			    CONSTRAINT tagwords_ibfk_2 FOREIGN KEY (wordid) REFERENCES words(wordid));',
+
+			    'CREATE INDEX ON tagwords (postid);',
+			    'CREATE INDEX ON tagwords  (wordid);'),
+    'posttags' => array('CREATE TABLE posttags (
+			    postid INT NOT NULL, 
+			    wordid INT NOT NULL, 
+			    postcreated TIMESTAMP(0) NOT NULL, 
+			    CONSTRAINT posttags_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE, 
+			    CONSTRAINT posttags_ibfk_2 FOREIGN KEY (wordid) REFERENCES words(wordid));',
+
+			    'CREATE INDEX ON posttags (postid);',
+			    'CREATE INDEX ON posttags (wordid,postcreated);'),
+    'uservotes' => array('CREATE TABLE uservotes (
+			    postid INT NOT NULL UNIQUE, 
+			    userid INT NOT NULL UNIQUE, 
+			    vote INT NOT NULL, 
+			    flag INT NOT NULL,
+			    CONSTRAINT uservotes_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+			    CONSTRAINT uservotes_ibfk_2 FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE);',
+
+			    'CREATE INDEX ON uservotes (postid);'),
+    'userpoints' => array('CREATE TABLE userpoints (
+			    userid INT NOT NULL, 
+			    points INT NOT NULL DEFAULT 0, 
+			    qposts INT NOT NULL DEFAULT 0, 
+			    aposts INT NOT NULL DEFAULT 0, 
+			    cposts INT NOT NULL DEFAULT 0, 
+			    aselects INT NOT NULL DEFAULT 0, 
+			    aselecteds INT NOT NULL DEFAULT 0, 
+			    qupvotes INT NOT NULL DEFAULT 0, 
+			    qdownvotes INT NOT NULL DEFAULT 0, 
+			    aupvotes INT NOT NULL DEFAULT 0, 
+			    adownvotes INT NOT NULL DEFAULT 0, 
+			    qvoteds INT NOT NULL DEFAULT 0, 
+			    avoteds INT NOT NULL DEFAULT 0, 
+			    upvoteds INT NOT NULL DEFAULT 0, 
+			    downvoteds INT NOT NULL DEFAULT 0, 
+			    bonus INT NOT NULL DEFAULT 0, 
+			    PRIMARY KEY (userid));',
+			    'CREATE INDEX ON userpoints (points);'),
+    'userlimits' => array('CREATE TABLE userlimits (
+			    userid INT NOT NULL, action CHAR(1) NOT NULL UNIQUE, 
+			    period INT NOT NULL, 
+			    count INT NOT NULL,
+			    CONSTRAINT userlimits_ibfk_1 FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE);'),
+    'iplimits' => array('CREATE TABLE iplimits (
+			    ip INT NOT NULL UNIQUE, 
+			    "action" CHAR(1) NOT NULL, 
+			    period INT NOT NULL, 
+			    count INT NOT NULL);'),
+    'cache' => array('CREATE TABLE "cache" (
+			"type" CHAR(8) NOT NULL, 
+			cacheid BIGINT DEFAULT 0,
+			"content" BYTEA NOT NULL, 
+			created TIMESTAMP(0) NOT NULL, 
+			lastread TIMESTAMP(0) NOT NULL, 
+			PRIMARY KEY ("type",cacheid));',
+
+			'CREATE INDEX ON "cache" (lastread);'),
+    'usermetas' => array('CREATE TABLE usermetas (
+			    userid INT NOT NULL, 
+			    title VARCHAR(40) NOT NULL, 
+			    content VARCHAR(8000) NOT NULL, 
+			    PRIMARY KEY (userid, title), 
+			    CONSTRAINT usermetas_ibfk_1 FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE);'),
+    'postmetas' => array('CREATE TABLE postmetas (
+			    postid INT NOT NULL, 
+			    title VARCHAR(40) NOT NULL, 
+			    "content" VARCHAR(8000) NOT NULL, 
+			    PRIMARY KEY (postid, title), 
+			    CONSTRAINT postmetas_ibfk_1 FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE);'),
+    'categorymetas' => array('CREATE TABLE categorymetas (
+				categoryid INT NOT NULL, 
+				title VARCHAR(40) NOT NULL, 
+				"content" VARCHAR(8000) NOT NULL, 
+				PRIMARY KEY (categoryid, title), 
+				CONSTRAINT categorymetas_ibfk_1 FOREIGN KEY (categoryid) REFERENCES categories(categoryid) ON DELETE CASCADE);'));
 
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
@@ -678,13 +866,13 @@ function qa_db_missing_columns($table, $definition)
 /*
   Return a list of columns missing from $table in the database, given the full definition set in $definition
  */ {
-    $keycolumns = qa_array_to_keys(qa_db_read_all_values(qa_db_query_sub('SHOW COLUMNS FROM ^' . $table)));
+    #$keycolumns = qa_array_to_keys(qa_db_read_all_values(qa_db_query_sub('SHOW COLUMNS FROM ^' . $table)));
 
-    $missing = array();
+    #$missing = array();
 
-    foreach ($definition as $colname => $coldefn)
-        if ((!is_int($colname)) && !isset($keycolumns[$colname]))
-            $missing[$colname] = $coldefn;
+    #foreach ($definition as $colname => $coldefn)
+    #    if ((!is_int($colname)) && !isset($keycolumns[$colname]))
+    #        $missing[$colname] = $coldefn;
 
     return $missing;
 }
@@ -709,7 +897,7 @@ function qa_db_set_db_version($version)
 /*
   Set the current version in the database
  */ {
-    qa_db_query_sub("REPLACE ^options (title,content) VALUES ('db_version', #)", $version);
+    #qa_db_query_sub("UPDATE options (title,content) VALUES ('db_version', #)", $version);
 }
 
 function qa_db_check_tables()

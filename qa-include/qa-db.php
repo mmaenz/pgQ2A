@@ -571,7 +571,7 @@
 
 	//	Perform query and extract results
 
-		$rawresults=qa_db_read_all_assoc(qa_db_query_raw($query));
+		#$rawresults=qa_db_read_all_assoc(qa_db_query_raw($query));
 
 		$outresults=array();
 		foreach ($selectspecs as $selectkey => $selectspec)
